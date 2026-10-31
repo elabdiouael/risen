@@ -5,6 +5,19 @@ const MAX_AGE = 60 * 60 * 8; // 8h
 
 const enc = new TextEncoder();
 
+/** Nettoie une env var : espaces + guillemets collés par erreur dans l'UI Vercel */
+function cleanEnv(name: string): string {
+  const raw = process.env[name] ?? "";
+  return raw.trim().replace(/^["']+|["']+$/g, "").trim();
+}
+
+export function adminConfigStatus() {
+  return {
+    hasPassword: cleanEnv("ADMIN_PASSWORD").length > 0,
+    hasSecret: cleanEnv("ADMIN_SECRET").length >= 16,
+  };
+}
+
 const b64url = (buf: ArrayBuffer | Uint8Array) => {
   const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
   let s = "";
@@ -13,8 +26,8 @@ const b64url = (buf: ArrayBuffer | Uint8Array) => {
 };
 
 const secret = () => {
-  const v = process.env.ADMIN_SECRET;
-  if (!v || v.length < 16) {
+  const v = cleanEnv("ADMIN_SECRET");
+  if (v.length < 16) {
     throw new Error("ADMIN_SECRET manquante (32+ caractères).");
   }
   return v;
@@ -44,10 +57,14 @@ export async function verifyToken(token: string | undefined): Promise<boolean> {
   if (!exp || !sig) return false;
   if (!/^\d+$/.test(exp) || Number(exp) < Date.now()) return false;
 
-  const expected = await sign(exp);
+  let expected: string;
+  try {
+    expected = await sign(exp);
+  } catch {
+    return false;
+  }
   if (expected.length !== sig.length) return false;
 
-  // Comparaison à temps constant
   let diff = 0;
   for (let i = 0; i < expected.length; i++) {
     diff |= expected.charCodeAt(i) ^ sig.charCodeAt(i);
@@ -57,10 +74,10 @@ export async function verifyToken(token: string | undefined): Promise<boolean> {
 
 /** Comparaison du mot de passe, à temps constant */
 export function passwordMatches(input: string): boolean {
-  const real = process.env.ADMIN_PASSWORD ?? "";
+  const real = cleanEnv("ADMIN_PASSWORD");
   if (real.length === 0) return false;
 
-  const a = enc.encode(input);
+  const a = enc.encode(input.trim());
   const b = enc.encode(real);
   let diff = a.length ^ b.length;
   const n = Math.max(a.length, b.length);

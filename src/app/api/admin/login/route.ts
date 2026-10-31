@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE, cookieOptions, createToken, passwordMatches } from "@/lib/auth";
+import {
+  SESSION_COOKIE,
+  adminConfigStatus,
+  cookieOptions,
+  createToken,
+  passwordMatches,
+} from "@/lib/auth";
 
 /* Anti-bruteforce simple, en mémoire */
 const attempts = new Map<string, { n: number; until: number }>();
@@ -7,6 +13,20 @@ const WINDOW = 10 * 60 * 1000;
 const MAX_TRIES = 8;
 
 export async function POST(request: Request) {
+  const cfg = adminConfigStatus();
+  if (!cfg.hasPassword) {
+    return NextResponse.json(
+      { error: "ADMIN_PASSWORD n'est pas configuré sur le serveur (Vercel → Environment Variables)." },
+      { status: 500 }
+    );
+  }
+  if (!cfg.hasSecret) {
+    return NextResponse.json(
+      { error: "ADMIN_SECRET n'est pas configuré (16+ caractères) sur le serveur." },
+      { status: 500 }
+    );
+  }
+
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
@@ -39,7 +59,12 @@ export async function POST(request: Request) {
 
   attempts.delete(ip);
 
-  const response = NextResponse.json({ success: true });
-  response.cookies.set(SESSION_COOKIE, await createToken(), cookieOptions);
-  return response;
+  try {
+    const response = NextResponse.json({ success: true });
+    response.cookies.set(SESSION_COOKIE, await createToken(), cookieOptions);
+    return response;
+  } catch (error) {
+    console.error("Erreur création session:", error);
+    return NextResponse.json({ error: "Erreur serveur (session)." }, { status: 500 });
+  }
 }
