@@ -1,14 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifyToken } from "@/lib/auth";
 
+/** Routes li khasshom ykounou m7loulin bla session */
+const PUBLIC_PATHS = new Set(["/admin/login", "/api/admin/login", "/api/admin/logout"]);
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const ok = await verifyToken(token);
 
-  // Déjà connecté -> pas de page de login
-  if (pathname === "/admin/login") {
-    if (ok) {
+  if (PUBLIC_PATHS.has(pathname)) {
+    // Déjà connecté -> pas besoin de la page login
+    if (ok && pathname === "/admin/login") {
       return NextResponse.redirect(new URL("/admin", request.url));
     }
     return NextResponse.next();
