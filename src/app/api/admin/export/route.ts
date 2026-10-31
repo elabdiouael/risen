@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import prisma from "@/lib/prisma";
 
 /** Échappe + neutralise l'injection de formules Excel */
@@ -8,6 +9,9 @@ function csv(v: unknown): string {
 }
 
 export async function GET() {
+  // Dynamique : jamais prerender au build
+  await connection();
+
   const records = await prisma.user.findMany({ orderBy: { id: "asc" } });
 
   const header =
