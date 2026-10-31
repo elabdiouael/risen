@@ -1,0 +1,269 @@
+.deck {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.label {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  line-height: 1.35;
+}
+
+.counter {
+  flex-shrink: 0;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: var(--accent-primary);
+  opacity: 0.75;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  perspective: 1100px;
+}
+
+/* ===== HITBOX: ma kayt7rrekch ===== */
+.hit {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: dealIn 0.5s var(--ease-out-quint) backwards;
+  animation-delay: calc(var(--i) * 0.07s);
+}
+
+.hit:focus-visible { outline: none; }
+
+.hit:focus-visible .visual {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+
+@keyframes dealIn {
+  from { opacity: 0; transform: translate3d(24px, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* ===== VISUEL ===== */
+.visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 18px;
+  padding: 13px clamp(12px, 3.4vw, 18px);
+  border-radius: 12px;
+  background: rgba(2, 10, 8, 0.8);
+  border: 1.5px solid var(--accent-border);
+  color: #e2e8f0;
+  overflow: hidden;
+  pointer-events: none;
+  transition:
+    transform 0.42s var(--ease-spring),
+    border-color 0.35s var(--ease-mech),
+    background 0.35s var(--ease-mech),
+    border-radius 0.4s var(--ease-spring),
+    clip-path 0.4s var(--ease-spring),
+    box-shadow 0.35s var(--ease-mech),
+    opacity 0.3s var(--ease-mech);
+}
+
+.scan {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
+  opacity: 0;
+  transform: translate3d(-110%, 0, 0);
+}
+
+.hex {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  transition: transform 0.45s var(--ease-spring), background 0.35s, border-radius 0.35s;
+}
+
+.hexInner {
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: var(--accent-primary);
+  transition: transform 0.45s var(--ease-spring), color 0.3s;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.92rem;
+  font-size: clamp(0.84rem, 2.5vw, 0.92rem);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.lock {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+}
+
+.lockBar {
+  width: 3px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--accent-primary);
+  opacity: 0.25;
+  transition: height 0.4s var(--ease-spring), opacity 0.3s;
+}
+
+.edge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 12px var(--accent-primary);
+  transform: scaleY(0);
+  transition: transform 0.4s var(--ease-spring);
+}
+
+/* ===== HOVER (desktop ghir) ===== */
+@media (hover: hover) {
+  .hit:hover .visual {
+    transform: rotateX(8deg) translate3d(0, -3px, 0);
+    border-color: var(--accent-primary);
+    box-shadow: 0 14px 30px var(--accent-soft), -5px 5px 0 var(--accent-primary);
+  }
+
+  .hit:hover .scan {
+    opacity: 1;
+    animation: scanRun 0.9s var(--ease-mech);
+  }
+
+  .hit:hover .hex { transform: rotate(45deg) scale(1.08); }
+  .hit:hover .hexInner { transform: rotate(-45deg); }
+
+  .hit:hover .lockBar:nth-child(1) { height: 8px; opacity: 0.6; }
+  .hit:hover .lockBar:nth-child(2) { height: 12px; opacity: 0.6; }
+  .hit:hover .lockBar:nth-child(3) { height: 8px; opacity: 0.6; }
+
+  .hit:hover .edge { transform: scaleY(0.55); }
+
+  .grid:has(.hit:hover) .hit:not(:hover):not(.locked) .visual {
+    opacity: 0.45;
+  }
+}
+
+@keyframes scanRun {
+  from { transform: translate3d(-110%, 0, 0); }
+  to   { transform: translate3d(260%, 0, 0); }
+}
+
+.hit:active .visual {
+  transform: scale(0.97);
+}
+
+/* ===== LOCKED ===== */
+.locked .visual {
+  clip-path: polygon(16px 0%, 100% 0%, calc(100% - 16px) 100%, 0% 100%);
+  border-radius: 0;
+  background: var(--accent-soft);
+  border: 2px solid var(--accent-primary);
+  color: #ffffff;
+  transform: translate3d(8px, 0, 0) scale(1.02);
+  box-shadow: 0 0 34px var(--accent-glow), inset 0 0 20px var(--accent-soft);
+}
+
+@media (hover: hover) {
+  .hit.locked:hover .visual {
+    transform: translate3d(8px, -2px, 0) scale(1.025);
+  }
+}
+
+.locked .hex {
+  background: var(--accent-primary);
+  border-radius: 10px;
+  transform: rotate(180deg) scale(1.1);
+}
+
+.locked .hexInner {
+  color: #020604;
+  transform: rotate(-180deg);
+}
+
+.locked .lockBar {
+  opacity: 1;
+  box-shadow: 0 0 8px var(--accent-primary);
+}
+
+.locked .lockBar:nth-child(1) { height: 7px;  animation: pulseBar 1.5s ease-in-out infinite; }
+.locked .lockBar:nth-child(2) { height: 16px; animation: pulseBar 1.5s ease-in-out 0.15s infinite; }
+.locked .lockBar:nth-child(3) { height: 11px; animation: pulseBar 1.5s ease-in-out 0.3s infinite; }
+
+@keyframes pulseBar {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.locked .edge { transform: scaleY(1); width: 4px; }
+
+/* Phase 2 */
+[data-theme-step="2"] .visual { border-radius: 3px; }
+[data-theme-step="2"] .locked .visual {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+/* Phase 3 */
+[data-theme-step="3"] .visual { border-radius: 14px; }
+[data-theme-step="3"] .locked .visual {
+  clip-path: none;
+  border-radius: 14px;
+  transform: scale(1.025);
+}
+
+@media (max-width: 400px) {
+  .visual { gap: 10px; }
+  .hex { width: 30px; height: 30px; }
+  .locked .visual { transform: translate3d(4px, 0, 0) scale(1.01); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hit { animation: none; }
+  .visual,
+  .locked .visual { transform: none !important; }
+  .scan { display: none; }
+  .lockBar { animation: none !important; }
+}

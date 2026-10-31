@@ -1,0 +1,53 @@
+/* 0x0 : nqta f l espace. L visuel kayt-centra b rasso te7t. */
+.anchor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 9500;
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(-100px, -100px, 0);
+}
+
+.ring {
+  position: absolute;
+  top: -17px;
+  left: -17px;
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid var(--accent-primary);
+  border-radius: 50%;
+  opacity: 0.7;
+  box-shadow: 0 0 14px var(--accent-soft);
+  transition:
+    border-color 0.5s var(--ease-mech),
+    border-radius 0.4s var(--ease-spring),
+    opacity 0.25s linear;
+}
+
+[data-theme-step="2"] .ring { border-radius: 3px; }
+[data-theme-step="3"] .ring { border-radius: 50%; border-width: 2px; }
+[data-warping="1"] .ring { opacity: 0.18; }
+
+.tick {
+  position: absolute;
+  background: var(--accent-primary);
+}
+
+.tick[data-side="t"] { top: -7px; left: 50%; width: 1.5px; height: 6px; margin-left: -0.75px; }
+.tick[data-side="b"] { bottom: -7px; left: 50%; width: 1.5px; height: 6px; margin-left: -0.75px; }
+.tick[data-side="l"] { left: -7px; top: 50%; height: 1.5px; width: 6px; margin-top: -0.75px; }
+.tick[data-side="r"] { right: -7px; top: 50%; height: 1.5px; width: 6px; margin-top: -0.75px; }
+
+.dot {
+  position: absolute;
+  top: -2.5px;
+  left: -2.5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  box-shadow: 0 0 10px var(--accent-primary);
+}

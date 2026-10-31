@@ -1,0 +1,266 @@
+.field {
+  --charge: 0;
+  --mx: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  perspective: 1000px;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: 0.3px;
+  font-variant-ligatures: none;
+}
+
+.active .label {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: 0.5px;
+  color: var(--accent-primary);
+}
+
+.status {
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  white-space: nowrap;
+  background: var(--accent-soft);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
+  transition: all 0.35s var(--ease-mech);
+}
+
+.active .status {
+  background: var(--accent-primary);
+  color: #020604;
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  transform-style: preserve-3d;
+  transition: transform 0.4s var(--ease-spring);
+}
+
+.input {
+  width: 100%;
+  padding: 15px 18px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  border-radius: 12px;
+  background-color: var(--input-bg) !important;
+  border: 1.5px solid var(--accent-border);
+  color: #ffffff !important;
+  caret-color: var(--accent-primary);
+  outline: none;
+  transition:
+    border-color 0.35s var(--ease-mech),
+    background-color 0.35s var(--ease-mech),
+    border-radius 0.4s var(--ease-spring),
+    clip-path 0.4s var(--ease-spring),
+    padding 0.35s var(--ease-spring),
+    box-shadow 0.35s var(--ease-mech);
+}
+
+.input::placeholder {
+  color: rgba(148, 163, 184, 0.4);
+  font-weight: 500;
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover,
+.input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+  box-shadow: 0 0 0 1000px var(--input-bg) inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: var(--accent-primary) !important;
+}
+
+/* Ailes latérales */
+.wing {
+  position: absolute;
+  width: 6px;
+  height: 46%;
+  background: var(--accent-primary);
+  z-index: 3;
+  pointer-events: none;
+  transition: all 0.4s var(--ease-spring);
+}
+
+.wing[data-side="l"] { left: -3px; border-radius: 4px 0 0 4px; }
+.wing[data-side="r"] { right: -3px; border-radius: 0 4px 4px 0; }
+
+/* Notches diagonaux — kayt7ello f l focus */
+.notch {
+  position: absolute;
+  width: 0;
+  height: 1.5px;
+  background: var(--accent-primary);
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  transition: all 0.4s var(--ease-spring);
+}
+
+.notch[data-corner="tl"] { top: 4px; left: 4px; transform: rotate(45deg); transform-origin: left; }
+.notch[data-corner="br"] { bottom: 4px; right: 4px; transform: rotate(45deg); transform-origin: right; }
+
+/* Balayage dyal daw li kaydouz mnin t-focusi */
+.sweep {
+  position: absolute;
+  inset: 1px;
+  border-radius: 11px;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.sweep::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-soft),
+    var(--accent-primary),
+    var(--accent-soft),
+    transparent
+  );
+  opacity: 0.45;
+}
+
+.active .sweep { opacity: 1; }
+.active .sweep::before { animation: sweepRun 0.75s var(--ease-mech); }
+
+@keyframes sweepRun {
+  0%   { left: -40%; }
+  100% { left: 110%; }
+}
+
+/* Rail te7tani : kayt3emmer 7sab chno katketb */
+.rail {
+  position: absolute;
+  bottom: 0;
+  left: 8%;
+  width: 84%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-mech);
+}
+
+.railFill {
+  display: block;
+  height: 100%;
+  width: calc(var(--charge) * 100%);
+  background: linear-gradient(90deg, var(--accent-secondary), var(--accent-primary));
+  box-shadow: 0 0 10px var(--accent-primary);
+  transition: width 0.3s var(--ease-out-quint);
+}
+
+.active .rail,
+.filled .rail { opacity: 1; }
+
+/* Graduations */
+.ticks {
+  position: absolute;
+  bottom: 3px;
+  left: 8%;
+  width: 84%;
+  display: flex;
+  justify-content: space-between;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease-mech);
+}
+
+.ticks i {
+  width: 1px;
+  height: 4px;
+  background: var(--accent-primary);
+  opacity: 0.35;
+}
+
+.active .ticks { opacity: 1; }
+
+/* ===== HOVER ===== */
+.field:hover .shell {
+  transform: rotateX(10deg) translate3d(0, -4px, 18px);
+}
+
+.field:hover .input {
+  border-color: var(--accent-primary);
+  background-color: var(--input-focus-bg) !important;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.6), 0 4px 0 var(--accent-primary);
+}
+
+.field:hover .wing[data-side="l"] { transform: translateX(-6px) scaleY(1.4); }
+.field:hover .wing[data-side="r"] { transform: translateX(6px) scaleY(1.4); }
+
+/* ===== FOCUS ===== */
+.active .shell {
+  transform: rotateX(0deg) translate3d(0, 0, 30px) scale(1.025) !important;
+}
+
+.active .input {
+  background-color: var(--input-focus-bg) !important;
+  clip-path: polygon(14px 0%, 100% 0%, calc(100% - 14px) 100%, 0% 100%);
+  border-radius: 0;
+  padding-left: 26px;
+  border-color: var(--accent-primary);
+  box-shadow:
+    0 0 34px var(--accent-glow),
+    inset 0 0 22px var(--accent-soft);
+}
+
+.active .wing { height: 92%; width: 8px; }
+.active .wing[data-side="l"] { transform: translateX(-8px) skewY(-14deg); }
+.active .wing[data-side="r"] { transform: translateX(8px) skewY(-14deg); }
+
+.active .notch { width: 14px; opacity: 1; }
+
+.filled .input { border-color: var(--accent-primary); }
+
+/* Phase 2 : angles 7adda */
+[data-theme-step="2"] .input { border-radius: 4px; }
+[data-theme-step="2"] .active .input {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+
+/* Phase 3 : chedd dyal l ma3dan */
+[data-theme-step="3"] .input { border-radius: 10px; }
+[data-theme-step="3"] .active .input {
+  clip-path: none;
+  border-radius: 10px;
+  padding-left: 18px;
+  border-width: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field:hover .shell,
+  .active .shell { transform: none !important; }
+  .active .sweep::before { animation: none; }
+}
