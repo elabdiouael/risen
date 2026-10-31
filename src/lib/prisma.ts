@@ -5,12 +5,22 @@ const globalForPrisma = globalThis as unknown as {
   prismaGlobal?: PrismaClient;
 };
 
+/** Pooled en priorité (serverless), sinon direct */
+function resolveUrl(): string | undefined {
+  return (
+    process.env.DATABASE_URL_POOLED ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.PRISMA_DATABASE_URL
+  );
+}
+
 function getClient(): PrismaClient {
   if (globalForPrisma.prismaGlobal) return globalForPrisma.prismaGlobal;
 
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = resolveUrl();
   if (!connectionString) {
-    throw new Error("DATABASE_URL manquante.");
+    throw new Error("Aucune URL de base de données trouvée.");
   }
 
   const client = new PrismaClient({
@@ -25,10 +35,7 @@ function getClient(): PrismaClient {
   return client;
 }
 
-/**
- * Client lazy : kaytkhle9 ghir f l awel query.
- * Bach `next build` ma ytta7ch ila DATABASE_URL mazal ma kaynach.
- */
+/** Client lazy : créé à la première requête */
 const prisma = new Proxy({} as PrismaClient, {
   get(_target, prop) {
     const client = getClient();
