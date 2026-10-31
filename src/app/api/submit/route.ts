@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, connection } from "next/server";
 import prisma from "@/lib/prisma";
 import { normalizePhone, validateAll } from "@/lib/validation";
 import type { FormDataType } from "@/types/form";
@@ -19,9 +19,13 @@ const FIELDS: (keyof FormDataType)[] = [
 
 /** GET : uniquement le compteur. Aucune donnée personnelle. */
 export async function GET() {
+  await connection();
   try {
     const count = await prisma.user.count();
-    return NextResponse.json({ success: true, count, max: MAX_INSCRIPTIONS });
+    return NextResponse.json(
+      { success: true, count, max: MAX_INSCRIPTIONS },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (error) {
     console.error("Erreur lecture:", error);
     return NextResponse.json(

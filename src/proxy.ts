@@ -1,32 +1,46 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, verifyToken } from "@/lib/auth";
+import { connection } from "next/server";
+import prisma from "@/lib/prisma";
 
-/** Routes li khasshom ykounou m7loulin bla session */
-const PUBLIC_PATHS = new Set(["/admin/login", "/api/admin/login", "/api/admin/logout"]);
-
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const token = request.cookies.get(SESSION_COOKIE)?.value;
-  const ok = await verifyToken(token);
-
-  if (PUBLIC_PATHS.has(pathname)) {
-    // Déjà connecté -> pas besoin de la page login
-    if (ok && pathname === "/admin/login") {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
-    return NextResponse.next();
-  }
-
-  if (!ok) {
-    if (pathname.startsWith("/api/admin")) {
-      return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
-    }
-    return NextResponse.redirect(new URL("/admin/login", request.url));
-  }
-
-  return NextResponse.next();
+/** Échappe + neutralise l'injection de formules Excel */
+function csv(v: unknown): string {
+  let s = String(v ?? "").replace(/"/g, '""');
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return `"${s}"`;
 }
 
-export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*"],
-};
+export async function GET() {
+  // Dynamique : jamais prerender au build
+  await connection();
+
+  const records = await prisma.user.findMany({ orderBy: { id: "asc" } });
+
+  const header =
+    "ID,Nom et Prénom,Email,Téléphone,Filière,Expérience,Utilisation IA,Objectif,Questions,Engagement,Date Inscription";
+
+  const rows = records.map((r) =>
+    [
+      r.id,
+      csv(r.nomComplet),
+      csv(r.email),
+      csv(r.telephone),
+      csv(r.filiere),
+      csv(r.experience),
+      csv(r.utilisationIA),
+      csv(r.objectif),
+      csv(r.questions ?? ""),
+      csv(r.engagement),
+      csv(r.dateInscription.toISOString()),
+    ].join(",")
+  );
+
+  const today = new Date().toISOString().slice(0, 10);
+  const body = "\uFEFF" + [header, ...rows].join("\r\n") + "\r\n";
+
+  return new Response(body, {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="vibecoding-inscriptions-${today}.csv"`,
+      "Cache-Control": "no-store",
+    },
+  });
+}
